@@ -6,8 +6,10 @@ import datetime
 import functools
 import unittest
 import json
+from random import sample
 
-from constants import INVALID_REQUEST, OK, FORBIDDEN, ADMIN_SALT, SALT, ADMIN_LOGIN
+from src.constants import INVALID_REQUEST, OK, FORBIDDEN, ADMIN_SALT, SALT, ADMIN_LOGIN
+from src.store import StorageManager
 
 
 def cases(cases):
@@ -143,8 +145,13 @@ class TestSuite(unittest.TestCase):
     ])
     def test_ok_interests_request(self, arguments):
         request = {"account": "horns&hoofs", "login": "h&f", "method": "clients_interests", "arguments": arguments}
+        interests = ["cars", "pets", "travel", "hi-tech", "sport", "music", "books", "tv", "cinema", "geek", "otus"]
+        data_to_insert = {str(client_id): sample(interests, 2) for client_id in arguments["client_ids"]}
+        for client_id in data_to_insert:
+            StorageManager.set_list_data(client_id, data_to_insert[client_id])
         self.set_valid_auth(request)
         response, code = self.get_response(request)
+        StorageManager.del_many_data(*data_to_insert.keys())
         self.assertEqual(OK, code, arguments)
         self.assertEqual(len(arguments["client_ids"]), len(response))
         self.assertTrue(all(v and isinstance(v, list) and all(isinstance(i, (bytes, str)) for i in v)

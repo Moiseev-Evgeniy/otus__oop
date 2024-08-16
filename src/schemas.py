@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 import datetime
 
-from constants import ADMIN_LOGIN
+from src.constants import ADMIN_LOGIN
 
 
 class BaseParamsMixin:
@@ -139,18 +139,18 @@ class ClientIDsField(BaseDescriptor):
 
 @dataclass
 class ClientsInterestsRequest:
-    client_ids: list[int] = ClientIDsField(required=True, nullable=False)
-    date: datetime.date = DateField(required=False, nullable=True)
+    client_ids: list[int] | None = ClientIDsField(required=True, nullable=False)
+    date: datetime.date | str | None = DateField(required=False, nullable=True)
 
 
 @dataclass
 class OnlineScoreRequest:
-    first_name: str = CharField(required=False, nullable=True)
-    last_name: str = CharField(required=False, nullable=True)
-    email: str = EmailField(required=False, nullable=True)
-    phone: str | int = PhoneField(required=False, nullable=True)
-    birthday: datetime.date = BirthDayField(required=False, nullable=True)
-    gender: int = GenderField(required=False, nullable=True)
+    first_name: str | None = CharField(required=False, nullable=True)
+    last_name: str | None = CharField(required=False, nullable=True)
+    email: str | None = EmailField(required=False, nullable=True)
+    phone: str | int | None = PhoneField(required=False, nullable=True)
+    birthday: datetime.date | str | None = BirthDayField(required=False, nullable=True)
+    gender: int | None = GenderField(required=False, nullable=True)
 
 
 @dataclass

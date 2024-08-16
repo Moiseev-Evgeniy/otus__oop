@@ -1,25 +1,23 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-"""Main entrypoint."""
-
+"""Main handler."""
 
 import json
 import logging
 import uuid
-from argparse import ArgumentParser
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler
 from email.message import Message
 
-from constants import INVALID_REQUEST, NOT_FOUND, INTERNAL_ERROR, ERRORS, OK, BAD_REQUEST, FORBIDDEN
-from schemas import OnlineScoreRequest, ClientsInterestsRequest
-from scoring import get_score, get_interests
-from utils import is_online_score_request_valid, check_auth, get_auth_data
+from src.constants import INVALID_REQUEST, NOT_FOUND, INTERNAL_ERROR, ERRORS, OK, BAD_REQUEST, FORBIDDEN
+from src.schemas import OnlineScoreRequest, ClientsInterestsRequest
+from src.scoring import get_score, get_interests
+from src.store import StorageManager
+from src.utils import is_online_score_request_valid, check_auth, get_auth_data
 
 
 class MainHTTPHandler(BaseHTTPRequestHandler):
     """The request handler."""
 
     router = {"online_score": get_score, "clients_interests": get_interests}
+    store = StorageManager
 
     @staticmethod
     def get_request_id(headers: Message) -> str:
@@ -69,7 +67,7 @@ class MainHTTPHandler(BaseHTTPRequestHandler):
             return response, NOT_FOUND
 
         try:
-            response = self.router[path](request_data, request.get("login"))
+            response = self.router[path](self.store, request_data, request.get("login"))
         except Exception as e:
             logging.exception("Unexpected error: %s" % e)
             code = INTERNAL_ERROR
@@ -123,19 +121,3 @@ class MainHTTPHandler(BaseHTTPRequestHandler):
 
         self.send_response_data(response, code, context)
         return
-
-
-if __name__ == "__main__":
-    parser = ArgumentParser()
-    parser.add_argument("-p", "--port", action="store", type=int, default=8080)
-    parser.add_argument("-l", "--log", action="store", default=None)
-    args = parser.parse_args()
-    logging.basicConfig(filename=args.log, level=logging.INFO,
-                        format='[%(asctime)s] %(levelname).1s %(message)s', datefmt='%Y.%m.%d %H:%M:%S')
-    server = HTTPServer(("localhost", args.port), MainHTTPHandler)
-    logging.info("Starting server at %s" % args.port)
-    try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        pass
-    server.server_close()

@@ -22,3 +22,8 @@ GENDERS = {
     MALE: "male",
     FEMALE: "female",
 }
+
+# Redis
+RETRY = 3
+TIMEOUT = 3
+TTL = 1200

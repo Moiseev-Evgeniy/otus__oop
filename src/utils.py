@@ -4,11 +4,11 @@ import datetime
 import hashlib
 import logging
 
-from constants import SALT, ADMIN_SALT
-from schemas import MethodRequest
+from src.constants import SALT, ADMIN_SALT
+from src.schemas import MethodRequest
 
 
-def get_auth_data(request):
+def get_auth_data(request: dict):
     """Method for validating authorization data."""
 
     try:
@@ -49,3 +49,7 @@ def is_online_score_request_valid(online_score_request):
     ):
         return True
     return False
+
+
+def generate_uid(values: list) -> str:
+    return "uid:" + hashlib.md5("".join(values).encode('utf-8')).hexdigest()
